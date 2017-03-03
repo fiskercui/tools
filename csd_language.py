@@ -117,10 +117,6 @@ def checkDir(fileName):
     global fileChineseDict
 
     print("file_extension", file_extension(fileName))
-    if len(fileChineseDict) != 0:
-        fileDictItem = {"files":fileName ,"nodeDict":fileChineseDict}
-        Chinese.append(fileDictItem)
-        fileChineseDict = []
 
     if file_extension(fileName) == ".csd":
         print("checkDir", fileName)
@@ -146,6 +142,11 @@ def checkDir(fileName):
                             print("child", child.tag)
                             if child.tag == "Children":
                                 enumChildren(child, None)
+        if len(fileChineseDict) != 0:
+            fileDictItem = {"files":fileName ,"nodeDict":fileChineseDict}
+            Chinese.append(fileDictItem)
+            fileChineseDict = []
+
     # if file_extension(fileName) == ".csd":
     #     file_xml = open(fileName,"r").read()
     #     charset = chardet.detect(file_xml)['encoding']
@@ -455,7 +456,7 @@ if __name__=="__main__":
     wirteXml()
 
     #输出json文件
-    outputJson()
+    # outputJson()
 
     #改写csd文件
-    writeLanguageCsd(RootDir, RootDir+"/language_csd.json")
+    # writeLanguageCsd(RootDir, RootDir+"/language_csd.json")
