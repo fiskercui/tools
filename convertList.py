@@ -228,7 +228,7 @@ def xlsToXml(xlsxFile, meta):
 
 		columnIndex =  getColumnNameIndex(sortkeyDict[meta]["cname"])
 		# print ("columnIndex", sortkeyDict[meta],columnIndex)
-		# print("sortkeyDict[", sortkeyDict[meta]["cname"] )
+		# print("sortkeyDict[", sortkeyDict[meta]["cname] )
 		keyBoolen  = (sortkeyDict[meta]["type"] == "int" and type(row[columnIndex].value) != types.UnicodeType) or (sortkeyDict[meta]["type"] != "int")
 
 		if bRowEffect == True and keyBoolen == True:
@@ -238,9 +238,11 @@ def xlsToXml(xlsxFile, meta):
 					columnIndex =  getColumnNameIndex(obj["cname"].strip())
 					columnE = dom.createElement(obj["name"])
 
+					# print(obj["cname"].strip().encode())
 					# print ( obj["cname"])
 					# print columnIndex
 					# print ( obj["cname"], columnIndex)
+					# print (type(row[columnIndex].value) )
 					if type(row[columnIndex].value) == types.IntType:
 						# print "int--"
 						columnE.appendChild(dom.createTextNode("%d"%(row[columnIndex].value)))
@@ -254,15 +256,25 @@ def xlsToXml(xlsxFile, meta):
 							# print ("checksize", obj["size"], len(utf8string))
 							if obj["size"] <= len(utf8string):
 								raise Exception(u"无效的行!行:%d   列:%s"%(rowIndex,(obj["cname"] )))
-						columnE.appendChild(dom.createTextNode(row[columnIndex].value))
+
+						# print("obj value", row[columnIndex].value.strip())
+						if obj["type"] == "int":
+							columnE.appendChild(dom.createTextNode(row[columnIndex].value.strip("[]")))
+						else:
+							columnE.appendChild(dom.createTextNode(row[columnIndex].value.strip()))
 					elif type(row[columnIndex].value) == types.NoneType:
 
 						if obj["type"] == "int":
 							columnE.appendChild(dom.createTextNode("0"))						
+						elif obj["type"] == "string":
+							columnE.appendChild(dom.createTextNode(""))						
 						else:
 							columnE.appendChild(dom.createTextNode(" "))						
 					else:
-						columnE.appendChild(dom.createTextNode("%r"%(row[columnIndex].value)))
+						if obj["type"] == "int":
+							columnE.appendChild(dom.createTextNode("%d"%(row[columnIndex].value)))
+						else:
+							columnE.appendChild(dom.createTextNode("%r"%(row[columnIndex].value)))
 
 					structE.appendChild(columnE)
 					# print obj["cname"], row[columnIndex].value
