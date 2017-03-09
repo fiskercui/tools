@@ -36,11 +36,11 @@ def start(rootDir):
         if os.path.isfile(sourceF):
             a, b = os.path.splitext(f) #去除扩展名
             checkDir(sourceF)
-            print("checkDir")
+            # print("checkDir")
         if os.path.isdir(sourceF):
             # checkName(f)
             start(sourceF)
-            print("sourceF")
+            # print("sourceF")
     print("end")
 #文件数组
 def file_extension(path): 
@@ -71,11 +71,17 @@ def replaceSpace(uniString):
     return resUniString
 
 
+def revertSpace(uniString):
+    index = uniString.find("&#xA;")
+    uniString = uniString.replace("&#xA;", chr(0xa))
+    return uniString
+
+
 def enumChildren(childrenNode, parentName):
     global fileChineseDict
-    print("enumChildren",childrenNode)
+    # print("enumChildren",childrenNode)
     for child in childrenNode:
-        print("hehehehe",(child.attrib)["Name"])
+        # print("hehehehe",(child.attrib)["Name"])
         nodeName = None
         if parentName != None:
             nodeName = parentName + "/" + (child.attrib)["Name"]
@@ -116,10 +122,10 @@ def enumChildren(childrenNode, parentName):
 def checkDir(fileName):
     global fileChineseDict
 
-    print("file_extension", file_extension(fileName))
+    # print("file_extension", file_extension(fileName))
 
     if file_extension(fileName) == ".csd":
-        print("checkDir", fileName)
+        # print("checkDir", fileName)
         try: 
             # file_xml = open(fileName,"r").read()
             # charset = chardet.detect(file_xml)['encoding']
@@ -132,17 +138,18 @@ def checkDir(fileName):
             return
 
         for child in root:
-            print("tag GameFile root")
+            # print("tag GameFile root")
             if child.tag == "Content":
-                print("tag content")
+                # print("tag content")
                 for subConent in child:
-                    print("tag content")
+                    # print("tag content")
                     for subsubContent in subConent:
                         for child in subsubContent:
-                            print("child", child.tag)
+                            # print("child", child.tag)
                             if child.tag == "Children":
                                 enumChildren(child, None)
         if len(fileChineseDict) != 0:
+            fileName = fileName[len(RootDir)+1:]
             fileDictItem = {"files":fileName ,"nodeDict":fileChineseDict}
             Chinese.append(fileDictItem)
             fileChineseDict = []
@@ -186,9 +193,24 @@ def checkDir(fileName):
     #            # print f
     #            name.append(f)
 
+
+def parseLanguageXml():
+    # global LanguageNode
+    try: 
+        tree = ET.parse(RootDir+"/language_csd.xml")     #打开xml文档 
+        root = tree.getroot()         #获得root节点  
+    except Exception, e: 
+        print "Error:cannot parse file:.xml" 
+        sys.exit(1) 
+    for child in root.findall("file"):
+        print "============"+child.tag 
+        print child.attrib["files"]
+        print type(child)
+    # print LanguageNode
+
 #输出到txt
-def wirteXml():
-    f = codecs.open(RootDir+"/language_csd.xml","w+","utf-8")
+def writeXml():
+
     # f.write("\nChinese :\n")
     # for i in range(0, len(Chinese)):
     #     f.write("\"" + Chinese[i] + "\"\n")  
@@ -210,26 +232,109 @@ def wirteXml():
     #     f.write("\t},\n")
     # f.write("]\n")
     # f.write(cs)
-    impl = xml.dom.minidom.getDOMImplementation()
-    dom = impl.createDocument(None, 'GameFile', None)
-    root = dom.documentElement  
-    # root.createElement('name')
 
-    # nameE = dom.createElement('name')
-    # root.appendChild(nameE)
+    dom = None
+    tree = None
+    if not os.path.exists(RootDir+"/language_csd.xml"):
+        impl = xml.dom.minidom.getDOMImplementation()
+        dom = impl.createDocument(None, 'GameFile', None)
+        root = dom.documentElement  
 
+        # root = ET.Element("GameFile")
+        # tree = ET.ElementTree(root)
+    else:
+        try: 
+            # dom = xml.dom.minidom.parse(RootDir+"/language_csd.xml")
+            # root = dom.documentElement  
+            tree = ET.parse(RootDir+"/language_csd.xml")     #打开xml文档 
+            root = tree.getroot()         #获得root节点  
+        except Exception, e: 
+            print "Error:cannot parse file:. language_csd"
+            sys.exit(1)
+
+    def indent(elem, level=0):
+            i = "\n" + level*"  "
+            if len(elem):
+                    if not elem.text or not elem.text.strip():
+                            elem.text = i + "  "
+                    if not elem.tail or not elem.tail.strip():
+                            elem.tail = i
+                    for elem in elem:
+                            indent(elem, level+1)
+                    if not elem.tail or not elem.tail.strip():
+                            elem.tail = i
+            else:
+                    if level and (not elem.tail or not elem.tail.strip()):
+                            elem.tail = i
+    def getFileNodeOrCreate(fileName):
+        for child in root.getiterator("file"):
+            if child.attrib["files"] == fileName:
+                return child
+        fileE = ET.SubElement(root, "file")
+        fileE.attrib["files"] = fileName
+        fileE.tail = "\n"
+        fileE.text = "\n\t"
+        # indent(fileE, 1)
+            # if child.getAttribute("files") == fileName:
+            #     return child        
+        # fileE = dom.createElement('file')
+        # fileE.setAttribute("files", fileName)
+        # root.appendChild(fileE)
+        return fileE
+
+    def getNodeByFileE(fileElement, nodeName):
+        for child in fileElement.getiterator("Node"):
+            # if child.getAttribute("NodeName") == nodeName:
+            #     return child
+            if child.attrib["NodeName"] == nodeName:
+                return child
+
+        print ("creat node ")
+        # nodeE = dom.createElement('Node')
+        # nodeE.setAttribute("NodeName", Chinese[i]["nodeDict"][j]["node"])
+        # fileElement.appendChild(nodeE)
+        nodeE = ET.SubElement(fileElement, 'Node') 
+        nodeE.attrib["NodeName"] = nodeName
+        nodeE.tail = "\n\t"
+
+        # indent(nodeE, 2)
+
+        return nodeE
+
+
+
+    print ("len Chinese", len(Chinese))
     for i in range(0, len(Chinese)):
-        fileE = dom.createElement('file')
-        fileE.setAttribute("files", Chinese[i]["files"])
-        root.appendChild(fileE)
-        for j in range(0, len(Chinese[i]["nodeDict"])):
-            nodeE = dom.createElement('Node')
-            nodeE.setAttribute("NodeName", Chinese[i]["nodeDict"][j]["node"])
-            nodeE.setAttribute("LabelText", Chinese[i]["nodeDict"][j]["text"])
-            fileE.appendChild(nodeE)
-    dom.writexml(f, addindent='  ', newl='\n',encoding='utf-8')
-    f.close()
+        print("=============",Chinese[i]["files"])
+        fileE = getFileNodeOrCreate(Chinese[i]["files"])
 
+
+        # fileE = dom.createElement('file')
+        # fileE.setAttribute("files", Chinese[i]["files"])
+        # root.appendChild(fileE)
+        for j in range(0, len(Chinese[i]["nodeDict"])):
+            nodeE = getNodeByFileE(fileE, Chinese[i]["nodeDict"][j]["node"])
+            # nodeE.setAttribute("LabelText", Chinese[i]["nodeDict"][j]["text"])
+            nodeE.attrib["LabelText"] = Chinese[i]["nodeDict"][j]["text"]
+
+            # nodeE = getNodeByFileE(fileE, Chinese[i]["nodeDict"][j]["node"])
+
+
+    # f = codecs.open(RootDir+"/language_csd.xml","w+","utf-8")
+    # dom.writexml(f, addindent='  ',encoding='utf-8')
+    # f.close()
+
+    # xmls =  xml.dom.minidom.parseString(
+    #             ET.tostring(
+    #               tree.getroot(),
+    #               'utf-8')).toprettyxml(encoding = "utf-8")
+
+
+    # f = codecs.open(RootDir+"/language_csd.xml","w+","utf-8")
+    # f.write( xmls)
+    # f.close()
+
+    tree.write(RootDir+"/language_csd.xml", encoding="UTF-8",xml_declaration=True)
 # 
 def readLangXml():
     fileName = RootDir+"/language_csd.xml"
@@ -360,7 +465,7 @@ def walkData(root_node, level, result_list):
         walkData(child, level + 1, result_list)  
     return  
 
-def changeNodeChildren(childrenNode, parentName):
+def changeNodeChildren(childrenNode, parentName, LangNodeDict):
     # print("changeChildrenNode")
     for child in childrenNode:
         nodeName = None
@@ -370,32 +475,52 @@ def changeNodeChildren(childrenNode, parentName):
             nodeName = (child.attrib)["Name"]
         print nodeName
 
-        if child.attrib.has_key("LabelText"):
-            labelText = (child.attrib)["LabelText"]
-            # for ch in labelText:
-            #     code = ord(ch)
-            #     print "%x"%(code),
-            # print 
-            # for ch in labelText.encode("string_escape"):
-            #     code = ord(ch)
-            #     print code
-            # print (chardet.detect((child.attrib)["LabelText"])["encoding"])
 
-            # labelText = (child.attrib)["LabelText"]
-            labalSpaceText =  replaceSpace(labelText)
-            match = zhPattern.search( labalSpaceText) 
-            if match:
-                print("match ok:%s"%(nodeName))
-                if LanguageJson.has_key(labalSpaceText):
-                    (child.attrib)["LabelText"] = LanguageJson[labalSpaceText]
+
+        # print ("*******---------")
+        if LangNodeDict.has_key(nodeName):
+            if child.attrib.has_key("LabelText"):
+                labelText = (child.attrib)["LabelText"]
+                # for ch in labelText:
+                #     code = ord(ch)
+                #     print "%x"%(code),
+                # print 
+                # for ch in labelText.encode("string_escape"):
+                #     code = ord(ch)
+                #     print code
+                # print (chardet.detect((child.attrib)["LabelText"])["encoding"])
+
+                # labelText = (child.attrib)["LabelText"]
+                # labalSpaceText =  replaceSpace(labelText)
+                # match = zhPattern.search( labalSpaceText) 
+                # if match:
+
+                originName = LangNodeDict[nodeName]
+                # print("match ok:%s"%(nodeName))
+                if LanguageJson.has_key(originName):
+                    print("——————————————————————————————————————")
+
+                    # for ch in LanguageJson[originName]:
+                    #     print ord(ch)
+
+                    restring = revertSpace(LanguageJson[originName])
+                    print((LanguageJson[originName]).encode("utf-8"))
+                    (child.attrib)["LabelText"] = restring
+                    print((child.attrib)["LabelText"] )
 
         for nodeData in child.findall('Children'):
-            changeNodeChildren(nodeData,nodeName)
+            changeNodeChildren(nodeData,nodeName,LangNodeDict)
 
 def changeLangeuage(fileName, langJson):
     global fileChineseDict
+
+    print("fileName", fileName)
+
+    subFileName = fileName[len(RootDir)+1:]
+    if not LanguageNode.has_key(subFileName):
+        return 
     print("changeLangeuage", fileName)
-    print("file_extension", file_extension(fileName))
+    # print("file_extension", file_extension(fileName))
     if file_extension(fileName) == ".csd":
         try: 
             tree = ET.parse(fileName)     #打开xml文档 
@@ -404,19 +529,20 @@ def changeLangeuage(fileName, langJson):
             print "Error:cannot parse file:." + fileName
             sys.exit(1) 
 
+
         for child in root:
-            print("iter root")
+            # print("iter root")
             if child.tag == "Content":
-                print("tag content")
+                # print("tag content")
                 for subConent in child:
-                    print("tag content")
+                    # print("tag content")
                     for subsubContent in subConent:
                         for child in subsubContent:
-                            print("child", child.tag)
+                            # print("child", child.tag)
                             if child.tag == "Children":
-                                changeNodeChildren(child, None)
+                                changeNodeChildren(child, None, LanguageNode[subFileName])
                       
-        tree.write(fileName)
+        tree.write(fileName, encoding="UTF-8",xml_declaration=False)
                         # print subsubContent.tag
         # result_list = [] 
         # level = 1
@@ -425,14 +551,37 @@ def changeLangeuage(fileName, langJson):
         #     print x  
         # pass
 
+
+def parseLanguageNode():
+    global LanguageNode
+    try: 
+        tree = ET.parse(RootDir+"/language_csd.xml")     #打开xml文档 
+        root = tree.getroot()         #获得root节点  
+    except Exception, e: 
+        print "Error:cannot parse file:." + fileName
+        sys.exit(1) 
+    for child in root:
+        # print (child.attrib)["files"]
+        fileName = (child.attrib)["files"]
+        # print fileName
+        LanguageNode[fileName] = {}
+
+        for sub in child:
+            # print sub.attrib["LabelText"]
+            # print sub.attrib["NodeName"]
+            LanguageNode[fileName][sub.attrib["NodeName"]] = sub.attrib["LabelText"]
+
+    # print LanguageNode
+
+
 def writeLanguageCsd(rootDir, langJson):
     f=file(langJson)
     global LanguageJson
     LanguageJson=json.load(f)
-    print(LanguageJson)
+    # print(LanguageJson)
     f.close()
+    # dumpLangjson()
 
-    dumpLangjson()
     for f in os.listdir(rootDir):
         sourceF = os.path.join(rootDir,f)
         if os.path.isfile(sourceF):
@@ -450,13 +599,17 @@ if __name__=="__main__":
     Chinese = []
 
     LanguageJson = {}
+    LanguageNode = {}
+
+    print(RootDir)
 
     # csd生成 node -chinese 文件
-    start(RootDir)
-    wirteXml()
+    # start(RootDir)
+    # writeXml()
 
     #输出json文件
     # outputJson()
 
     #改写csd文件
-    # writeLanguageCsd(RootDir, RootDir+"/language_csd.json")
+    parseLanguageNode()
+    writeLanguageCsd(RootDir, RootDir+"/language_csd.json")
