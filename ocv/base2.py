@@ -5,11 +5,13 @@ from scipy.optimize import leastsq
 
 import pylab as pl 
 def func(x, p):
-  """ 数据拟合所用的函数: A*sin(2*pi*k*x + theta) """
+  print u""" 数据拟合所用的函数: A*sin(2*pi*k*x + theta) """
   A, k, theta = p
   return A*np.sin(2*np.pi*k*x+theta)
 def residuals(p, y, x): 
 	print u""" 实验数据x, y和拟合函数之间的差，p为拟合需要找到的系数 """ 
+	print len(x)
+	print x, y, p
 	return y - func(x, p) 
 x = np.linspace(0, -2*np.pi, 100)
 A, k, theta = 10, 0.34, np.pi/6 # 真实数据的函数参数 
