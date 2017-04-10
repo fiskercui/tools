@@ -1,7 +1,7 @@
 #coding=utf-8
 import cv2 
 
-img = cv2.imread("D:\\cat.jpg") 
+img = cv2.imread(".\\texture\\texure.png") 
 cv2.namedWindow("Image") 
 # print img
 cv2.imshow("Image", img) 
