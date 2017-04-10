@@ -139,10 +139,87 @@ def testTransfrom():
 
 	plt.show()
 
+
+
+# import cv2.cv as cv
+# import cv2.cv as cv
+def testCVT():
+    '''
+    经常用到的颜色转换BGR->Gray 和BGR->HSV
+    '''
+    # 读取图片 B，G，R，返回一个ndarray类型
+    img = cv2.imread('./texture/texure.png')
+    #cv2.COLOR_BGR2GRAY;cv2.COLOR_BGR2HSV
+    # 彩色图像转灰度图像YUV(Y即为灰度图) Y = 0.299R + 0.587G + 0.114B
+    img1 = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # 彩色图像转灰度图像YUV(Y->亮度；U,V->色度)
+    img2 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    print img1
+    print img2
+    cv2.namedWindow("Image") 
+
+    cv2.imshow("Image", img) 
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+ 
+
+    cv2.imshow("Image", img1) 
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    cv2.imshow("Image", img2) 
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+def testCascadeClassifier():
+	# #import library - MUST use cv2 if using opencv_traincascade
+	# import cv2
+	# rectangle color and stroke
+	color = (0,0,255)       # reverse of RGB (B,G,R) - weird
+	strokeWeight = 1        # thickness of outline
+
+	# set window name
+	windowName = "Object Detection"
+	# load an image to search for faces
+	img = cv2.imread('./texture/xdd.jpg')
+	# cv2.imshow("Image", img)
+	# cv2.waitKey(0)
+	# cv2.destroyAllWindows()
+	# load detection file (various files for different views and uses)
+	cascade = cv2.CascadeClassifier("./data/haarcascades/haarcascade_frontalface_alt.xml")
+	# preprocessing, as suggested by: http://www.bytefish.de/wiki/opencv/object_detection
+	# img_copy = cv2.resize(img, (img.shape[1]/2, img.shape[0]/2))
+	# gray = cv2.cvtColor(img_copy, cv2.COLOR_BGR2GRAY)
+	# gray = cv2.equalizeHist(gray)
+
+	# detect objects, return as list
+	rects = cascade.detectMultiScale(img)
+
+	# display until escape key is hit
+	while True:
+
+	    # get a list of rectangles
+	    for x,y, width,height in rects:
+	        cv2.rectangle(img, (x,y), (x+width, y+height), color, strokeWeight)
+
+	    # display!
+	    cv2.imshow(windowName, img)
+
+	    # escape key (ASCII 27) closes window
+	    if cv2.waitKey(20) == 27:
+	        break
+
+	# if esc key is hit, quit!
+	exit()
+	 
 if __name__=="__main__":
 
 	# testMat()
 	# testHistogram()
 	# testLeastsq()
 	# testLine()
-	testTransfrom()
+	# testTransfrom()
+
+	# testCVT()
+	testCascadeClassifier()
