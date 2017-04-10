@@ -10,10 +10,11 @@ def func(x, p):
   return A*np.sin(2*np.pi*k*x+theta)
 def residuals(p, y, x): 
 	print u""" 实验数据x, y和拟合函数之间的差，p为拟合需要找到的系数 """ 
-	print len(x)
-	print x, y, p
+	# print len(x)
+	# print x, y, p
 	return y - func(x, p) 
 x = np.linspace(0, -2*np.pi, 100)
+print x
 A, k, theta = 10, 0.34, np.pi/6 # 真实数据的函数参数 
 y0 = func(x, [A, k, theta]) # 真实数据 
 y1 = y0 + 2 * np.random.randn(len(x)) # 加入噪声之后的实验数据 
