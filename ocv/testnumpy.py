@@ -171,7 +171,19 @@ def testCVT():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+def testBroader():
+	BLUE = [255,0,0]
+	 
+	img1 = cv2.imread('opencv_logo.png')
+	 
+	replicate = cv2.copyMakeBorder(img1,10,10,10,10,cv2.BORDER_REPLICATE)
+	reflect = cv2.copyMakeBorder(img1,10,10,10,10,cv2.BORDER_REFLECT)
+	reflect101 = cv2.copyMakeBorder(img1,10,10,10,10,cv2.BORDER_REFLECT_101)
+	wrap = cv2.copyMakeBorder(img1,10,10,10,10,cv2.BORDER_WRAP)
+	constant= cv2.copyMakeBorder(img1,10,10,10,10,cv2.BORDER_CONSTANT,value=BLUE)
 
+
+#face detect
 def testCascadeClassifier():
 	# #import library - MUST use cv2 if using opencv_traincascade
 	# import cv2
@@ -212,7 +224,74 @@ def testCascadeClassifier():
 
 	# if esc key is hit, quit!
 	exit()
-	 
+
+
+def testCanny():
+	def CannyThreshold(lowThreshold):
+	    detected_edges = cv2.GaussianBlur(gray,(3,3),0)
+	    detected_edges = cv2.Canny(detected_edges,lowThreshold,lowThreshold*ratio,apertureSize = kernel_size)
+	    dst = cv2.bitwise_and(img,img,mask = detected_edges)  # just add some colours to edges from original image.
+	    cv2.imshow('canny demo',dst)
+
+	lowThreshold = 0
+	max_lowThreshold = 100
+	ratio = 3
+	kernel_size = 3
+
+	img = cv2.imread('./texture/xdd.jpg')
+	gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+
+	cv2.namedWindow('canny demo')
+	cv2.createTrackbar('Min threshold','canny demo',lowThreshold, max_lowThreshold, CannyThreshold)
+	CannyThreshold(0)  # initialization
+	if cv2.waitKey(0) == 27:
+	    cv2.destroyAllWindows()
+
+
+
+
+
+def testEdgeTect():
+    image = cv2.imread('./texture/xdd.jpg')
+    cv2.imshow("Original", image)
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    cv2.imshow("Gray", gray)
+
+    #if don't use a floating point data type when computing
+    #the gradient magnitude image, you will miss edges
+    lap = cv2.Laplacian(gray, cv2.CV_64F)
+    lap = np.uint8(np.absolute(lap))
+
+    #display two images in a figure
+    cv2.imshow("Edge detection by Laplacaian", np.hstack([lap, gray]))
+    cv2.imwrite("1_edge_by_laplacian.jpg", np.hstack([gray, lap]))
+
+    if(cv2.waitKey(0)==27):
+     cv2.destroyAllWindows()
+
+def testSobel():
+
+	img = cv2.imread('./texture/xdd.jpg', 0)
+
+	x = cv2.Sobel(img,cv2.CV_16S,1,0)
+	y = cv2.Sobel(img,cv2.CV_16S,0,1)
+
+	absX = cv2.convertScaleAbs(x)
+	absY = cv2.convertScaleAbs(y)
+
+	dst = cv2.addWeighted(absX,0.5,absY,0.5,0)
+
+	cv2.imshow("absX", absX)
+	cv2.imshow("absY", absY)
+
+	cv2.imshow("Result", dst)
+
+	cv2.waitKey(0)
+	cv2.destroyAllWindows() 
+
+
+
 if __name__=="__main__":
 
 	# testMat()
@@ -222,4 +301,9 @@ if __name__=="__main__":
 	# testTransfrom()
 
 	# testCVT()
-	testCascadeClassifier()
+	# testCascadeClassifier()
+
+	# testEdgeTect()
+	#testCanny()
+	testSobel()
+
