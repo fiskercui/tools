@@ -5,7 +5,10 @@ def bernstein_poly(i, n, t):
     """
      The Bernstein polynomial of n, i as a function of t
     """
-
+    # print t
+    print "bernstein_poly", i, n
+    print len(t)
+    # print  comb(n, i) * ( t**(n-i) ) * (1 - t)**i
     return comb(n, i) * ( t**(n-i) ) * (1 - t)**i
 
 
@@ -30,14 +33,28 @@ def bezier_curve(points, nTimes=1000):
     t = np.linspace(0.0, 1.0, nTimes)
 
     polynomial_array = np.array([ bernstein_poly(i, nPoints-1, t) for i in range(0, nPoints)   ])
+    print polynomial_array
+
+    print len(xPoints)
+    print len(polynomial_array)
 
     xvals = np.dot(xPoints, polynomial_array)
     yvals = np.dot(yPoints, polynomial_array)
 
+    print xvals
+    print yvals
     return xvals, yvals
 
 
+def testDot(src1, src2):
+    print np.dot(src1, src2)
+
+
 if __name__ == "__main__":
+
+
+    # testDot([1,2],[3,5])
+
     from matplotlib import pyplot as plt
 
     nPoints = 4
