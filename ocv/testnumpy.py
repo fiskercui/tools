@@ -286,6 +286,13 @@ def testSobel():
 	cv2.waitKey(0)
 	cv2.destroyAllWindows() 
 
+#蒙特·卡罗方法（Monte Carlo method），也称统计模拟方法
+def testMonteCarlo():
+    N = 1000
+    u, sigma = 0, 20
+    points = sigma * np.random.randn(N, 2) + u
+    plt.scatter([x[0] for x in points], [x[1] for x in points], c=np.random.rand(N), alpha=0.5)
+    plt.show()
 
 
 if __name__=="__main__":
@@ -301,5 +308,6 @@ if __name__=="__main__":
 
 	# testEdgeTect()
 	#testCanny()
-	testSobel()
+	#testSobel()
 
+	testMonteCarlo()
