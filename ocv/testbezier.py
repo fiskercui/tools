@@ -41,8 +41,9 @@ def bezier_curve(points, nTimes=1000):
     xvals = np.dot(xPoints, polynomial_array)
     yvals = np.dot(yPoints, polynomial_array)
 
-    print xvals
-    print yvals
+    print len(xvals[0])
+    # print xvals
+    # print yvals
     return xvals, yvals
 
 
